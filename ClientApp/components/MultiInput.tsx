@@ -1,7 +1,22 @@
-import * as React from 'react';
-import { RouteComponentProps } from 'react-router';
-import * as shortid from 'shortid'
+﻿import * as React from 'react';
 import { ChangeEvent } from 'react';
+import LocalizedStrings from 'react-localization';
+import { RouteComponentProps } from 'react-router';
+import * as shortid from 'shortid';
+import * as Helper from '../helper'
+
+let localizationStrings = new LocalizedStrings({
+    en: {
+        testCase: "test case",
+        save: "Save",
+        cancel: "Cancel"
+    },
+    hu: {
+        testCase: "teszteset",
+        save: "Mentés",
+        cancel: "Mégse"
+    }
+});
 
 
 enum InputType { Text }
@@ -20,8 +35,12 @@ export class MultiInput extends React.Component<RouteComponentProps<{}>, MultiIn
 
     originalState: any;
 
-    constructor() {
-        super();
+
+    constructor(props: any) {
+        super(props);
+
+        localizationStrings.setLanguage(Helper.language);
+
         var inputFields: InputField[] = [];
         var values: any[] = ["Cream-colored ponies", "crisp apple strudels", "Doorbells", "sleigh bells", "schnitzel with noodles"]
 
@@ -33,7 +52,7 @@ export class MultiInput extends React.Component<RouteComponentProps<{}>, MultiIn
             inputFields: inputFields
         };
 
-        this.originalState = JSON.parse(JSON.stringify(this.state));
+        this.originalState = Helper.deepCopy(this.state)
     }
 
     public render() {
@@ -43,16 +62,15 @@ export class MultiInput extends React.Component<RouteComponentProps<{}>, MultiIn
             //border: "5px solid red",
             float: "right"
         }
-
         return <div>
             <h1>Multi input</h1>
 
             <p>This is a simple example of a React component.</p>
 
             {this.state.inputFields.map(function (inputField, index) {
-                return <div className="input-bar" key={inputField.key + "divmain"} style={margin}>
+                return <div className="input-bar" key={inputField.key + "divmain"} style={margin} >
                     <div className="input-bar-item width100">
-                        <label>{index + 1}. test case</label>
+                        <label>{index + 1}. {localizationStrings.testCase}</label>
                         <div className="input-group">
                             {this.renderInputField(inputField, index)}
                             {this.renderCloseButton(inputField, index)}
@@ -61,8 +79,8 @@ export class MultiInput extends React.Component<RouteComponentProps<{}>, MultiIn
                 </div>
             }, this)}
             <div className="float-right" key={"divbutton"} style={margin}>
-                <button type="button" className="btn btn-primary" style={margin} onClick={() => this.save()}>Save</button>
-                <button type="button" className="btn btn-primary" style={margin} onClick={() => this.cancel()}>Cancel</button>
+                <button type="button" className="btn btn-primary" style={margin} onClick={() => this.save()}>{localizationStrings.save}</button>
+                <button type="button" className="btn btn-primary" style={margin} onClick={() => this.cancel()}>{localizationStrings.cancel}</button>
             </div>
         </div>;
     }
@@ -72,23 +90,24 @@ export class MultiInput extends React.Component<RouteComponentProps<{}>, MultiIn
             value={inputField.value}
             key={inputField.key + "input"}
             className="form-control"
-            onChange={(e) => this.edit(e, index)}
+            onChange={(e) => this.edit(e, index)
+            }
         />
     }
     public renderCloseButton(inputField: InputField, index: number) {
         return <span className="input-group-btn">
-            <button className="btn"
-                onClick={() => this.delete(index)}
-                key={inputField.key + "button"}
-                disabled={this.state.inputFields.length == 1}>
-                &times;
-                                    </button>
-        </span>
+                    <button className="btn"
+                        onClick={() => this.delete(index)}
+                        key={inputField.key + "button"}
+                        disabled={this.state.inputFields.length == 1}>
+                        &times;
+                    </button>
+               </span>
     }
 
 
     edit(e: ChangeEvent<HTMLInputElement>, index: number) {
-        var newState = JSON.parse(JSON.stringify(this.state));
+        var newState = Helper.deepCopy(this.state)
         console.log(this.state)
         console.log(e.target.value)
         newState.inputFields[index].value = e.target.value
@@ -102,7 +121,7 @@ export class MultiInput extends React.Component<RouteComponentProps<{}>, MultiIn
 
     delete(index: number) {
         if (this.state.inputFields.length > 1) {
-            var newState = JSON.parse(JSON.stringify(this.state));
+            var newState = Helper.deepCopy(this.state)
             var spliced = newState.inputFields.splice(index, 1);
             console.log(newState)
             this.setState(newState);
