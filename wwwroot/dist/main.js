@@ -59,7 +59,7 @@
 /******/ 	
 /******/ 	
 /******/ 	var hotApplyOnUpdate = true;
-/******/ 	var hotCurrentHash = "8e6b545180e9a9151da8"; // eslint-disable-line no-unused-vars
+/******/ 	var hotCurrentHash = "c33d68e7ec3b7ba76422"; // eslint-disable-line no-unused-vars
 /******/ 	var hotCurrentModuleData = {};
 /******/ 	var hotCurrentChildModule; // eslint-disable-line no-unused-vars
 /******/ 	var hotCurrentParents = []; // eslint-disable-line no-unused-vars
@@ -8135,7 +8135,6 @@ var InputType;
 class MultiInput extends __WEBPACK_IMPORTED_MODULE_0_react__["Component"] {
     constructor() {
         super();
-        console.log('CTOR');
         var inputFields = [];
         var values = ["Cream-colored ponies", "crisp apple strudels", "Doorbells", "sleigh bells", "schnitzel with noodles"];
         for (var i = 0; i < values.length; i++) {
@@ -8156,23 +8155,36 @@ class MultiInput extends __WEBPACK_IMPORTED_MODULE_0_react__["Component"] {
             __WEBPACK_IMPORTED_MODULE_0_react__["createElement"]("h1", null, "Multi input"),
             __WEBPACK_IMPORTED_MODULE_0_react__["createElement"]("p", null, "This is a simple example of a React component."),
             this.state.inputFields.map(function (inputField, index) {
-                return __WEBPACK_IMPORTED_MODULE_0_react__["createElement"]("div", { className: "input-bar", key: inputField.key + "div", style: margin },
+                return __WEBPACK_IMPORTED_MODULE_0_react__["createElement"]("div", { className: "input-bar", key: inputField.key + "divmain", style: margin },
                     __WEBPACK_IMPORTED_MODULE_0_react__["createElement"]("div", { className: "input-bar-item width100" },
+                        __WEBPACK_IMPORTED_MODULE_0_react__["createElement"]("label", null,
+                            index + 1,
+                            ". test case"),
                         __WEBPACK_IMPORTED_MODULE_0_react__["createElement"]("div", { className: "input-group" },
-                            __WEBPACK_IMPORTED_MODULE_0_react__["createElement"]("input", { type: "text", key: inputField.key + "input", className: "form-control", placeholder: index.toString(), defaultValue: inputField.value, onChange: () => this.edit(index) }),
-                            __WEBPACK_IMPORTED_MODULE_0_react__["createElement"]("span", { className: "input-group-btn" },
-                                __WEBPACK_IMPORTED_MODULE_0_react__["createElement"]("button", { className: "btn", onClick: () => this.delete(index), key: inputField.key + "button" }, "\u00D7")))));
+                            this.renderInputField(inputField, index),
+                            this.renderCloseButton(inputField, index))));
             }, this),
-            __WEBPACK_IMPORTED_MODULE_0_react__["createElement"]("div", { className: "float-right", style: margin },
+            __WEBPACK_IMPORTED_MODULE_0_react__["createElement"]("div", { className: "float-right", key: "divbutton", style: margin },
                 __WEBPACK_IMPORTED_MODULE_0_react__["createElement"]("button", { type: "button", className: "btn btn-primary", style: margin, onClick: () => this.save() }, "Save"),
                 __WEBPACK_IMPORTED_MODULE_0_react__["createElement"]("button", { type: "button", className: "btn btn-primary", style: margin, onClick: () => this.cancel() }, "Cancel")));
     }
-    edit(index) {
+    renderInputField(inputField, index) {
+        return __WEBPACK_IMPORTED_MODULE_0_react__["createElement"]("input", { type: "text", value: inputField.value, key: inputField.key + "input", className: "form-control", onChange: (e) => this.edit(e, index) });
+    }
+    renderCloseButton(inputField, index) {
+        return __WEBPACK_IMPORTED_MODULE_0_react__["createElement"]("span", { className: "input-group-btn" },
+            __WEBPACK_IMPORTED_MODULE_0_react__["createElement"]("button", { className: "btn", onClick: () => this.delete(index), key: inputField.key + "button", disabled: this.state.inputFields.length == 1 }, "\u00D7"));
+    }
+    edit(e, index) {
+        var newState = JSON.parse(JSON.stringify(this.state));
+        console.log(this.state);
+        console.log(e.target.value);
+        newState.inputFields[index].value = e.target.value;
+        console.log(newState);
         if (index == this.state.inputFields.length - 1) {
-            var newState = JSON.parse(JSON.stringify(this.state));
             newState.inputFields.push({ value: "", key: __WEBPACK_IMPORTED_MODULE_1_shortid__["generate"](), type: InputType.Text });
-            this.setState(newState);
         }
+        this.setState(newState);
     }
     delete(index) {
         if (this.state.inputFields.length > 1) {
