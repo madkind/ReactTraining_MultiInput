@@ -36,6 +36,7 @@ export class MultiInput extends React.Component<RouteComponentProps<{}>, MultiIn
     originalState: any;
 
 
+
     constructor(props: any) {
         super(props);
 
@@ -62,6 +63,7 @@ export class MultiInput extends React.Component<RouteComponentProps<{}>, MultiIn
             //border: "5px solid red",
             float: "right"
         }
+       
         return <div>
             <h1>Multi input</h1>
 
@@ -86,10 +88,18 @@ export class MultiInput extends React.Component<RouteComponentProps<{}>, MultiIn
     }
 
     public renderInputField(inputField: InputField, index: number) {
+        var backColorEven = {
+            background: "#f2f6f7"
+        }
+        var backColorOdd = {
+            background: "#ffffff"
+        }
+
         return <input type="text"
             value={inputField.value}
             key={inputField.key + "input"}
             className="form-control"
+            style={index % 2 == 0 ? backColorEven : backColorOdd}
             onChange={(e) => this.edit(e, index)
             }
         />
