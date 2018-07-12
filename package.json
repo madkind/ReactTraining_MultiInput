@@ -34,7 +34,8 @@
     "webpack-command": "^0.4.1",
     "webpack-hot-middleware": "2.18.2",
     "shortid": "^2.2.11",
-    "react-localization": "^1.0.10"
+    "react-localization": "^1.0.10",
+     "axios": "^0.18.0"
   },
   "dependencies": {
     "@types/prop-types": "^15.5.3",

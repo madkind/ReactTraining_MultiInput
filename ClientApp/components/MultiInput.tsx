@@ -4,6 +4,7 @@ import LocalizedStrings from 'react-localization';
 import { RouteComponentProps } from 'react-router';
 import * as shortid from 'shortid';
 import * as Helper from '../helper'
+import axios from 'axios'
 
 let localizationStrings = new LocalizedStrings({
     en: {
@@ -19,7 +20,7 @@ let localizationStrings = new LocalizedStrings({
 });
 
 
-enum InputType { Text }
+enum InputType { Text, CheckBox, Date }
 
 interface InputField {
     key: string,
@@ -34,25 +35,28 @@ interface MultiInputState {
 export class MultiInput extends React.Component<RouteComponentProps<{}>, MultiInputState> {
 
     originalState: any;
-
-
+    backColorEven = { background: "#f2f6f7" }
+    backColorOdd = { background: "#ffffff" }
 
     constructor(props: any) {
         super(props);
-
+        this.state = { inputFields: [] };
+        axios.get('api/MultiInput/GetMultiInputData')
+            .then(response => {
+                console.log(response)
+                this.initState(response.data)
+            })
         localizationStrings.setLanguage(Helper.language);
-
+    }
+    initState(values: any[]) {
         var inputFields: InputField[] = [];
-        var values: any[] = ["Cream-colored ponies", "crisp apple strudels", "Doorbells", "sleigh bells", "schnitzel with noodles"]
 
-        for (var i = 0; i < values.length; i++) {
-            inputFields.push({ value: values[i], key: shortid.generate(), type: InputType.Text })
-        }
+        for (var i = 0; i < values.length; i++)
+            inputFields.push({ value: values[i], key: shortid.generate(), type: this.getType(values[i]) })
 
-        this.state = {
-            inputFields: inputFields
-        };
+        inputFields.push({ value: "", key: shortid.generate(), type: InputType.Text })
 
+        this.setState({ inputFields: inputFields });
         this.originalState = Helper.deepCopy(this.state)
     }
 
@@ -60,14 +64,11 @@ export class MultiInput extends React.Component<RouteComponentProps<{}>, MultiIn
 
         var margin = {
             margin: "6px",
-            //border: "5px solid red",
             float: "right"
         }
        
         return <div>
             <h1>Multi input</h1>
-
-            <p>This is a simple example of a React component.</p>
 
             {this.state.inputFields.map(function (inputField, index) {
                 return <div className="input-bar" key={inputField.key + "divmain"} style={margin} >
@@ -88,22 +89,37 @@ export class MultiInput extends React.Component<RouteComponentProps<{}>, MultiIn
     }
 
     public renderInputField(inputField: InputField, index: number) {
-        var backColorEven = {
-            background: "#f2f6f7"
+        switch (inputField.type) {
+            case InputType.Text:
+                return this.renderTextInputField(inputField,index)
+            case InputType.CheckBox:
+                return this.renderCheckboxInputField(inputField, index)
+            default:
+                throw new Error("Unsupported data type")
         }
-        var backColorOdd = {
-            background: "#ffffff"
-        }
+    }
 
-        return <input type="text"
-            value={inputField.value}
-            key={inputField.key + "input"}
-            className="form-control"
-            style={index % 2 == 0 ? backColorEven : backColorOdd}
+    public renderCheckboxInputField(inputField: InputField, index: number) {
+        return <input type="checkbox"
+            value="true"
+            key={inputField.key + "checkbox"}
+            style={index % 2 == 0 ? this.backColorEven : this.backColorOdd}
             onChange={(e) => this.edit(e, index)
             }
         />
     }
+
+    public renderTextInputField(inputField: InputField, index: number) {
+        var style = index % 2 == 0 ? this.backColorEven : this.backColorOdd
+        return <input type="text"
+            value={inputField.value}
+            key={inputField.key + "input"}
+            className="form-control"
+            style={style}
+            onChange={(e) => this.edit(e, index)
+            }
+        />
+    }   
     public renderCloseButton(inputField: InputField, index: number) {
         return <span className="input-group-btn">
                     <button className="btn"
@@ -118,10 +134,7 @@ export class MultiInput extends React.Component<RouteComponentProps<{}>, MultiIn
 
     edit(e: ChangeEvent<HTMLInputElement>, index: number) {
         var newState = Helper.deepCopy(this.state)
-        console.log(this.state)
-        console.log(e.target.value)
         newState.inputFields[index].value = e.target.value
-        console.log(newState)
 
         if (index == this.state.inputFields.length - 1) {
             newState.inputFields.push({ value: "", key: shortid.generate(), type: InputType.Text });
@@ -140,11 +153,22 @@ export class MultiInput extends React.Component<RouteComponentProps<{}>, MultiIn
 
     save() {
         console.log(this.state.inputFields)
+        axios.post('api/MultiInput/PostMultiInputData', this.state.inputFields)
     }
 
     cancel() {
         console.log(this.originalState)
         this.setState(this.originalState);
+    }
+
+    getType(value: any): InputType {
+        if (typeof(value) == typeof(true)) {
+            return InputType.CheckBox;
+        }
+        else if(typeof(value) == typeof("string")){
+            return InputType.Text;
+        }
+        throw new Error("Unsupported data type")
     }
 }
 
