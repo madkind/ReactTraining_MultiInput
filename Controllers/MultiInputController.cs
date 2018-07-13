@@ -9,9 +9,9 @@ namespace React_Training.Controllers
     [Route("api/[controller]")]
     public class MultiInputController : Controller
     {
-        private static object[] multiInputData = new[]
+         object[] multiInputData = new object[] 
         {
-           "Cream-colored ponies", "crisp apple strudels", "Doorbells","sleigh bells","schnitzel with noodles"
+           "Cream-colored ponies", "crisp apple strudels", true ,"Doorbells","sleigh bells","schnitzel with noodles"
         };
 
         [HttpGet("[action]")]
@@ -30,7 +30,7 @@ namespace React_Training.Controllers
         public class InputField
         {
             public string Key { get; set; }
-            public int Type { get; set; }
+            public InputType Type { get; set; }
             public object Value { get; set; }
 
             public override string ToString()
@@ -38,5 +38,8 @@ namespace React_Training.Controllers
                 return $"key:{Key}, value: {Value}, type: {Type}";
             }
         }
+
+        public enum InputType { Text, CheckBox, Date }
+
     }
 }

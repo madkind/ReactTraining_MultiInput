@@ -43,7 +43,6 @@ export class MultiInput extends React.Component<RouteComponentProps<{}>, MultiIn
         this.state = { inputFields: [] };
         axios.get('api/MultiInput/GetMultiInputData')
             .then(response => {
-                console.log(response)
                 this.initState(response.data)
             })
         localizationStrings.setLanguage(Helper.language);
@@ -66,7 +65,7 @@ export class MultiInput extends React.Component<RouteComponentProps<{}>, MultiIn
             margin: "6px",
             float: "right"
         }
-       
+
         return <div>
             <h1>Multi input</h1>
 
@@ -76,7 +75,7 @@ export class MultiInput extends React.Component<RouteComponentProps<{}>, MultiIn
                         <label>{index + 1}. {localizationStrings.testCase}</label>
                         <div className="input-group">
                             {this.renderInputField(inputField, index)}
-                            {this.renderCloseButton(inputField, index)}
+                            {this.renderButtons(inputField, index)}
                         </div>
                     </div>
                 </div>
@@ -91,7 +90,7 @@ export class MultiInput extends React.Component<RouteComponentProps<{}>, MultiIn
     public renderInputField(inputField: InputField, index: number) {
         switch (inputField.type) {
             case InputType.Text:
-                return this.renderTextInputField(inputField,index)
+                return this.renderTextInputField(inputField, index)
             case InputType.CheckBox:
                 return this.renderCheckboxInputField(inputField, index)
             default:
@@ -100,41 +99,64 @@ export class MultiInput extends React.Component<RouteComponentProps<{}>, MultiIn
     }
 
     public renderCheckboxInputField(inputField: InputField, index: number) {
-        return <input type="checkbox"
-            value="true"
-            key={inputField.key + "checkbox"}
+        return <div className="input-group">
+                    <span className="input-group-addon">
+                    <input type="checkbox"
+                            checked={inputField.value}
+                    key={inputField.key + "checkbox"}
+                    onChange={(e) => this.edit(e, index, InputType.CheckBox)}
+                        />
+                    </span>
+                    <input type="text" className="form-control" disabled={true} style={index % 2 == 0 ? this.backColorEven : this.backColorOdd} />
+           </div>
+    }
+
+    public renderTextInputField(inputField: InputField, index: number) {
+        return <input type="text"
+            value={inputField.value}
+            key={inputField.key + "input"}
+            className="form-control"
             style={index % 2 == 0 ? this.backColorEven : this.backColorOdd}
             onChange={(e) => this.edit(e, index)
             }
         />
     }
 
-    public renderTextInputField(inputField: InputField, index: number) {
-        var style = index % 2 == 0 ? this.backColorEven : this.backColorOdd
-        return <input type="text"
-            value={inputField.value}
-            key={inputField.key + "input"}
-            className="form-control"
-            style={style}
-            onChange={(e) => this.edit(e, index)
-            }
-        />
-    }   
+
+    public renderButtons(inputField: InputField, index: number) {
+        return <div className="input-group-btn">
+            <button type="button" className="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">{InputType[inputField.type]} <span className="caret"></span></button>
+            <ul className="dropdown-menu dropdown-menu-right">
+                <li><a onClick={() => this.setFieldType(InputType.Text, index)}>Text</a></li>
+                <li><a onClick={() => this.setFieldType(InputType.CheckBox, index)}>Checkbox</a></li>
+            </ul>
+            <button className="btn btn-default"
+                onClick={() => this.delete(index)}
+                key={inputField.key + "button"}
+                disabled={this.state.inputFields.length == 1}>
+                &times;
+                    </button>
+        </div>
+
+
+    }
     public renderCloseButton(inputField: InputField, index: number) {
         return <span className="input-group-btn">
-                    <button className="btn"
-                        onClick={() => this.delete(index)}
-                        key={inputField.key + "button"}
-                        disabled={this.state.inputFields.length == 1}>
-                        &times;
+            <button className="btn"
+                onClick={() => this.delete(index)}
+                key={inputField.key + "button"}
+                disabled={this.state.inputFields.length == 1}>
+                &times;
                     </button>
-               </span>
+        </span>
     }
 
 
-    edit(e: ChangeEvent<HTMLInputElement>, index: number) {
+    edit(e: ChangeEvent<HTMLInputElement>, index: number, inputType?: InputType) {
+
         var newState = Helper.deepCopy(this.state)
-        newState.inputFields[index].value = e.target.value
+
+        newState.inputFields[index].value = (inputType == InputType.CheckBox) ? e.target.checked : e.target.value
 
         if (index == this.state.inputFields.length - 1) {
             newState.inputFields.push({ value: "", key: shortid.generate(), type: InputType.Text });
@@ -146,29 +168,33 @@ export class MultiInput extends React.Component<RouteComponentProps<{}>, MultiIn
         if (this.state.inputFields.length > 1) {
             var newState = Helper.deepCopy(this.state)
             var spliced = newState.inputFields.splice(index, 1);
-            console.log(newState)
             this.setState(newState);
         }
     }
 
     save() {
-        console.log(this.state.inputFields)
         axios.post('api/MultiInput/PostMultiInputData', this.state.inputFields)
     }
 
     cancel() {
-        console.log(this.originalState)
         this.setState(this.originalState);
     }
 
     getType(value: any): InputType {
-        if (typeof(value) == typeof(true)) {
+        if (typeof (value) == typeof (true)) {
             return InputType.CheckBox;
         }
-        else if(typeof(value) == typeof("string")){
+        else if (typeof (value) == typeof ("string")) {
             return InputType.Text;
         }
         throw new Error("Unsupported data type")
+    }
+
+    setFieldType(inputType: InputType, index: number) {
+        var newState = Helper.deepCopy(this.state)
+        newState.inputFields[index].value = null;
+        newState.inputFields[index].type = inputType;
+        this.setState(newState);
     }
 }
 
